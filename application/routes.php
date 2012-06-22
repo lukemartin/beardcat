@@ -67,7 +67,24 @@ Event::listen('500', function()
 
 Route::filter('before', function()
 {
-    // Do stuff before every request to your application...
+    $params = Request::route();
+    $params = $params->parameters;
+
+    if (count($params) !== 0) {
+        $beardcat = Cache::get('beardcat');
+
+        // check for a page
+        if (isset($beardcat['pages'][$params[0]])) {
+            return Sparkdown\Markdown(file_get_contents(path('markdown').$beardcat['pages'][$params[0]]));
+        }
+
+        // check for a post
+        if (isset($beardcat['posts'][$params[0]])) {
+            return Sparkdown\Markdown(file_get_contents(path('markdown').$beardcat['posts'][$params[0]]));
+        }
+
+        Response::error('404');
+    }
 });
 
 Route::filter('after', function($response)
