@@ -9,20 +9,24 @@ class Beardcat {
     {
         $this->url = $url;
         $this->cache = unserialize(file_get_contents(ROOT . DS . 'beardcat/beardcat-cache'));
+        arsort($this->cache['posts']);
     }
 
     public function go()
     {
-        if ($this->url == '') die();
+        $md_file = $this->is_page() ? $this->get_page() : ($this->is_post() ? $this->get_post() : $this->throw_404());
 
-        $md_file = $this->url == '' ? 'md' : ($this->is_page() ? $this->get_page() : ($this->is_post() ? $this->get_post() : $this->throw_404()));
+        if ($this->is_post()) {
+            preg_match('/(\d{4}\/\d{2}\/\d{2})/', $md_file, $matches);
+            $this->date = str_replace('/', '-', $matches[1]);
+        }
 
         $this->render($md_file);
     }
 
     private function render($md_file, $status = 200)
     {
-        $md = Markdown(file_get_contents($md_file));
+        $md = file_get_contents($md_file);
 
         switch ($status) {
             case 404:
@@ -34,11 +38,19 @@ class Beardcat {
         }
     }
 
-    private function embed_in_template($md)
+    private function embed_in_template($content)
     {
         $template = file_get_contents('../templates/view.php');
 
-        $template = str_replace('{{ CONTENT }}', $md, $template);
+        preg_match('/(#{1} [\S ]+)/', $content, $matches);
+        $title = $matches[1];
+
+        $content = str_replace($matches[1], '', $content);
+
+        $template = str_replace('{{ TITLE }}', Markdown($title), $template);
+        $template = str_replace('{{ CONTENT }}', Markdown($content), $template);
+
+        $template = str_replace('{{ DATE }}', $this->is_post() ? $this->date : '', $template);
 
         return $template;
     }
@@ -69,7 +81,7 @@ class Beardcat {
 
     private function throw_404()
     {
-        die("404");
+        return '../markdown/pages/404.md';
     }
 
     public function debug_cache()
@@ -78,4 +90,8 @@ class Beardcat {
         print_r($this->cache);
         echo '</pre><hr />';
     }
+}
+
+function sortByOrder($a, $b) {
+    return $b['date'] > $a['date'];
 }

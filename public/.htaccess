@@ -4,7 +4,14 @@ RewriteEngine On
 # Add trailing slash
 RewriteCond %{REQUEST_URI} !\.[^./]+$
 RewriteCond %{REQUEST_URI} !(.*)/$
-RewriteRule ^(.*)$ http://beardcat.dev/$1/ [R=301,L]
+RewriteRule ^(.*)$ /$1/ [R=301,L]
+
+#RewriteCond %{REQUEST_URI} /index/$
+#RewriteRule ^(.*)$ http://beardcat.dev/ [R=301, L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} ![^/]
+RewriteRule ^(.*)$ index.php?url=index/ [L]
 
 # Redirect to index.php
 RewriteCond %{REQUEST_FILENAME} !-f

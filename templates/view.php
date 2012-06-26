@@ -19,7 +19,17 @@
 </head>
 <body>
     <div class="wrap">
-        {{ CONTENT }}
+        <div class="content">
+            <article>
+                <header>
+                    {{ TITLE }}
+                    <time>{{ DATE }}</time>
+                </header>
+                <div class="post">
+                    {{ CONTENT }}
+                </div>
+            </article>
+        </div>
     </div>
 </body>
 </html>
